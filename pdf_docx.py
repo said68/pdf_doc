@@ -37,24 +37,31 @@ def convert_pdf_to_docx(pdf_files):
 def main():
     st.title("Convertisseur PDF en DOCX")
 
+    # Initialiser l'état de session pour les fichiers convertis
+    if 'converted_files' not in st.session_state:
+        st.session_state.converted_files = []
+
     pdf_files = st.file_uploader("Télécharger des fichiers PDF", type="pdf", accept_multiple_files=True)
 
     if pdf_files:
         if st.button("Convertir"):
             with st.spinner("Conversion en cours..."):
-                converted_files = convert_pdf_to_docx(pdf_files)
+                st.session_state.converted_files = convert_pdf_to_docx(pdf_files)
             
-            if converted_files:
+            if st.session_state.converted_files:
                 st.success("Conversion terminée avec succès!")
-                for file_name, docx_buffer in converted_files:
-                    st.download_button(
-                        label=f"Télécharger {file_name}",
-                        data=docx_buffer,
-                        file_name=os.path.splitext(file_name)[0] + '.docx',
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    )
-                if st.button("Initialiser"):
-                    st.experimental_rerun()
+
+    if st.session_state.converted_files:
+        for file_name, docx_buffer in st.session_state.converted_files:
+            st.download_button(
+                label=f"Télécharger {file_name}",
+                data=docx_buffer,
+                file_name=os.path.splitext(file_name)[0] + '.docx',
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+        if st.button("Initialiser"):
+            st.session_state.converted_files = []
+            st.experimental_rerun()
 
 if __name__ == '__main__':
     main()
