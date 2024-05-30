@@ -53,10 +53,11 @@ def main():
 
     if st.session_state.converted_files:
         for file_name, docx_buffer in st.session_state.converted_files:
+            docx_file_name = os.path.splitext(file_name)[0] + '.docx'
             st.download_button(
-                label=f"Télécharger {file_name}",
+                label=f"Télécharger {docx_file_name}",
                 data=docx_buffer,
-                file_name=os.path.splitext(file_name)[0] + '.docx',
+                file_name=docx_file_name,
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
         if st.button("Initialiser"):
