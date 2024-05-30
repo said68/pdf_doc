@@ -35,7 +35,8 @@ def convert_pdf_to_docx(pdf_files):
                 label=f"Télécharger {docx_file_name}",
                 data=docx_buffer,
                 file_name=docx_file_name,
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                key=f"download_{docx_file_name}"
             )
 
         except Exception as e:
@@ -51,10 +52,10 @@ def main():
     if 'conversion_done' not in st.session_state:
         st.session_state.conversion_done = False
 
-    pdf_files = st.file_uploader("Télécharger des fichiers PDF", type="pdf", accept_multiple_files=True)
+    pdf_files = st.file_uploader("Télécharger des fichiers PDF", type="pdf", accept_multiple_files=True, key="uploader")
 
     if pdf_files:
-        if st.button("Convertir"):
+        if st.button("Convertir", key="convert_button"):
             with st.spinner("Conversion en cours..."):
                 convert_pdf_to_docx(pdf_files)
                 st.session_state.conversion_done = True
@@ -67,16 +68,14 @@ def main():
                 label=f"Télécharger {file_name}",
                 data=docx_buffer,
                 file_name=file_name,
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                key=f"download_{file_name}"
             )
         if st.session_state.conversion_done:
-            if st.button("Initialiser"):
+            if st.button("Initialiser", key="reset_button"):
                 st.session_state.converted_files = []
                 st.session_state.conversion_done = False
                 st.experimental_rerun()
-
-if __name__ == '__main__':
-    main()
 
 if __name__ == '__main__':
     main()
