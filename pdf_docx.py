@@ -2,9 +2,11 @@ import streamlit as st
 import os
 from pdf2docx import Converter
 import tempfile
+from io import BytesIO
 
 # Fonction pour convertir les fichiers PDF en DOCX
-def convert_pdf_to_docx(pdf_files, output_dir):
+def convert_pdf_to_docx(pdf_files):
+    converted_files = []
     for pdf_file in pdf_files:
         try:
             # Enregistrer le fichier PDF temporairement
@@ -12,39 +14,47 @@ def convert_pdf_to_docx(pdf_files, output_dir):
                 tmp_pdf.write(pdf_file.read())
                 tmp_pdf_path = tmp_pdf.name
             
-            # Définir le chemin du fichier DOCX
-            docx_path = os.path.join(output_dir, os.path.splitext(pdf_file.name)[0] + '.docx')
+            # Créer un buffer en mémoire pour le fichier DOCX
+            docx_buffer = BytesIO()
             
             # Conversion du fichier PDF en DOCX
             cv = Converter(tmp_pdf_path)
-            cv.convert(docx_path, start=0, end=None)
+            cv.convert(docx_buffer, start=0, end=None)
             cv.close()
 
             # Supprimer le fichier PDF temporaire
             os.remove(tmp_pdf_path)
 
-            st.write(f"Fichier converti : {docx_path}")
+            docx_buffer.seek(0)
+            converted_files.append((pdf_file.name, docx_buffer))
+
         except Exception as e:
             st.error(f"Erreur lors de la conversion de {pdf_file.name} : {e}")
 
-    st.success("Conversion terminée avec succès!")
+    return converted_files
 
 # Interface Streamlit
 def main():
-    st.title("Convertisseur PDFs en DOCX")
+    st.title("Convertisseur PDF en DOCX")
 
     pdf_files = st.file_uploader("Télécharger des fichiers PDF", type="pdf", accept_multiple_files=True)
-    output_dir = st.text_input("Entrez le chemin du répertoire de sortie")
 
-    if pdf_files and output_dir:
+    if pdf_files:
         if st.button("Convertir"):
-            if os.path.isdir(output_dir):
-                with st.spinner("Conversion en cours..."):
-                    convert_pdf_to_docx(pdf_files, output_dir)
+            with st.spinner("Conversion en cours..."):
+                converted_files = convert_pdf_to_docx(pdf_files)
+            
+            if converted_files:
+                st.success("Conversion terminée avec succès!")
+                for file_name, docx_buffer in converted_files:
+                    st.download_button(
+                        label=f"Télécharger {file_name}",
+                        data=docx_buffer,
+                        file_name=os.path.splitext(file_name)[0] + '.docx',
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
                 if st.button("Initialiser"):
                     st.experimental_rerun()
-            else:
-                st.error("Le répertoire de sortie spécifié n'existe pas. Veuillez réessayer.")
 
 if __name__ == '__main__':
     main()
