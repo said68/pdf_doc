@@ -31,7 +31,7 @@ def convert_pdf_to_docx(pdf_files, output_dir):
 
 # Interface Streamlit
 def main():
-    st.title("Convertisseur PDF en DOCX")
+    st.title("Convertisseur PDFs en DOCX")
 
     pdf_files = st.file_uploader("Télécharger des fichiers PDF", type="pdf", accept_multiple_files=True)
     output_dir = st.text_input("Entrez le chemin du répertoire de sortie")
